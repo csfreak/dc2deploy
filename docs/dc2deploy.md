@@ -7,17 +7,18 @@ Convert Openshift DeploymentConfig to Kuberentes Deployment
 Convert Openshift DeploymentConfig to Kuberentes Deployment. It can source from and output to json, yaml, or kubernetes. Flags and Args match kubectl where possible.
 
 ```
-dc2deploy [flags]
+dc2deploy [name] [flags]
 ```
 
 ### Examples
 
 ```
-Example (from file)
-	dc2deploy -f dc.yaml --output deploy.yaml
 
-	Example (from Kubernetes)
-	dc2deploy dcname -n namespacename --dry-run
+From File:
+dc2deploy -f dc.yaml --output deploy.yaml
+	
+From Kubernetes:
+dc2deploy dcname -n namespacename --dry-run
 ```
 
 ### Options
