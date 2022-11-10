@@ -23,6 +23,8 @@ THE SOFTWARE.
 package convert
 
 import (
+	"fmt"
+
 	ocappsv1 "github.com/openshift/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -32,15 +34,19 @@ import (
 func LoadDC(path string) (*ocappsv1.DeploymentConfig, error) {
 	scheme := runtime.NewScheme()
 	gvocappsv1 := schema.GroupVersion{Group: "apps.openshift.io", Version: "v1"}
+
 	scheme.AddKnownTypes(gvocappsv1, &ocappsv1.DeploymentConfig{})
+
 	b := resource.NewLocalBuilder().
 		FilenameParam(false, &resource.FilenameOptions{Filenames: []string{path}}).
 		WithScheme(scheme, gvocappsv1).
 		Flatten().
 		Do()
+
 	r, err := b.Infos()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to build dc from file: %w", err)
 	}
+
 	return r[0].Object.(*ocappsv1.DeploymentConfig), nil
 }

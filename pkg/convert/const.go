@@ -27,12 +27,10 @@ const (
 	GeneratedByAnnotationKey = "openshift.io/generated-by"
 	DeploymentConfigPodLabel = "deploymentconfig"
 	DeploymentPodLabel       = "deployment"
-	
 )
 
-
 var (
-	StripAnnotations = [2] string {LastAppliedAnnotationKey, GeneratedByAnnotationKey}
+	StripAnnotations = [2]string{LastAppliedAnnotationKey, GeneratedByAnnotationKey}
 	ReplaceLabels    = map[string]string{
 		DeploymentConfigPodLabel: DeploymentPodLabel,
 	}

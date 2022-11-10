@@ -61,6 +61,7 @@ func ToDeploy(orig *ocappsv1.DeploymentConfig) (*appsv1.Deployment, error) {
 	deploy.Spec.Replicas = &dc.Spec.Replicas
 	deploy.Spec.RevisionHistoryLimit = dc.Spec.RevisionHistoryLimit
 	deploy.Spec.MinReadySeconds = dc.Spec.MinReadySeconds
+
 	if dc.Spec.Strategy.Type == ocappsv1.DeploymentStrategyTypeRolling {
 		deploy.Spec.Strategy = appsv1.DeploymentStrategy{
 			Type: appsv1.RollingUpdateDeploymentStrategyType,
@@ -69,6 +70,7 @@ func ToDeploy(orig *ocappsv1.DeploymentConfig) (*appsv1.Deployment, error) {
 				MaxSurge:       dc.Spec.Strategy.RollingParams.MaxSurge,
 			},
 		}
+
 		if orig.Spec.Strategy.RollingParams.TimeoutSeconds != nil {
 			timeout32 := int32(*orig.Spec.Strategy.RollingParams.TimeoutSeconds)
 			deploy.Spec.ProgressDeadlineSeconds = &timeout32
@@ -77,6 +79,7 @@ func ToDeploy(orig *ocappsv1.DeploymentConfig) (*appsv1.Deployment, error) {
 		deploy.Spec.Strategy = appsv1.DeploymentStrategy{
 			Type: appsv1.RecreateDeploymentStrategyType,
 		}
+
 		if orig.Spec.Strategy.RecreateParams != nil && orig.Spec.Strategy.RecreateParams.TimeoutSeconds != nil {
 			timeout32 := int32(*orig.Spec.Strategy.RecreateParams.TimeoutSeconds)
 			deploy.Spec.ProgressDeadlineSeconds = &timeout32
@@ -84,6 +87,7 @@ func ToDeploy(orig *ocappsv1.DeploymentConfig) (*appsv1.Deployment, error) {
 	}
 
 	var triggers []trigger.ObjectFieldTrigger
+
 	for _, dctrigger := range dc.Spec.Triggers {
 		if dctrigger.Type == ocappsv1.DeploymentTriggerOnImageChange {
 			for _, containername := range dctrigger.ImageChangeParams.ContainerNames {
@@ -103,8 +107,9 @@ func ToDeploy(orig *ocappsv1.DeploymentConfig) (*appsv1.Deployment, error) {
 	if triggers != nil {
 		triggersjson, err := json.Marshal(triggers)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("unable to marshal triggers: %w", err)
 		}
+
 		deploy.Annotations[trigger.TriggerAnnotationKey] = string(triggersjson)
 	}
 
@@ -112,37 +117,43 @@ func ToDeploy(orig *ocappsv1.DeploymentConfig) (*appsv1.Deployment, error) {
 }
 
 func ToOuput(d *appsv1.Deployment, filetype string) ([]byte, error) {
-
-	if filetype == "yaml" {
+	switch filetype {
+	case "yaml":
 		return yaml.Marshal(d)
-	} else if filetype == "json" {
+	case "json":
 		return json.Marshal(d)
-	} else {
+	default:
 		return nil, fmt.Errorf("unkown file type: %s (use json or yaml)", filetype)
 	}
 }
 
 func cleanAnnotations(a map[string]string) map[string]string {
 	var o = make(map[string]string)
+
 	for key := range a {
 		o[key] = a[key]
 	}
+
 	for i := range StripAnnotations {
 		delete(o, StripAnnotations[i])
 	}
+
 	return o
 }
 
 func cleanLabels(l map[string]string) map[string]string {
 	var o = make(map[string]string)
+
 	for key := range l {
 		o[key] = l[key]
 	}
+
 	for k, v := range ReplaceLabels {
 		if _, ok := o[k]; ok {
 			o[v] = o[k]
 			delete(o, k)
 		}
 	}
+
 	return o
 }

@@ -50,6 +50,7 @@ func DoLive() error {
 				w.Log(Options.Verbosity)
 			}
 		}
+
 		if Options.IgnoreWarnings {
 			klog.V(2).InfoS("ignoring warnings")
 		} else {
@@ -59,14 +60,15 @@ func DoLive() error {
 
 	deploy, err := convert.ToDeploy(dc)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to convert to deploy: %w", err)
 	}
 
 	if Options.LiveDryRun {
 		o, err := convert.ToOuput(deploy, string(Options.OutputFileType))
 		if err != nil {
-			return err
+			return fmt.Errorf("unable to marshal object: %w", err)
 		}
+
 		fmt.Print("-----------\n\n")
 		fmt.Println(string(o))
 		fmt.Println("-----------")

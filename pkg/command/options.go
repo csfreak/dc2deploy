@@ -64,35 +64,39 @@ func SetCommandOptions(c *CommandOptions) error {
 		Options.LiveDryRun = c.LiveDryRun
 		Options.IgnoreWarnings = c.IgnoreWarnings
 		Options.inputType = LiveIOType
+
 		if c.LiveDryRun {
 			Options.outputType = FileIOType
 			Options.OutputFilename = "-"
 		} else {
 			Options.outputType = LiveIOType
 		}
+
 		if c.Filename != "-" || c.OutputFilename != "-" {
 			return fmt.Errorf("cannot specify filename or outfile on live operation")
 		}
-	} else if c.Filename != "" {
+	} else {
 		Options.Filename = c.Filename
 		Options.inputType = FileIOType
 		Options.outputType = FileIOType
+
 		if c.LiveDryRun ||
 			c.LiveKubeconfig != "" ||
 			c.LiveNamespace != "" ||
 			c.LiveDC != "" {
 			return fmt.Errorf("cannot specify input filename and live options")
 		}
+
 		if c.OutputFilename != "" {
 			Options.OutputFilename = c.OutputFilename
 		}
-	} else {
-		return fmt.Errorf("must specify one of filename or deploymentcontroller name")
 	}
 
 	if Options.outputType == FileIOType {
 		Options.OutputFileType = c.OutputFileType
 	}
+
 	Options.Verbosity = c.Verbosity
+
 	return nil
 }

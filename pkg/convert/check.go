@@ -73,29 +73,37 @@ var (
 
 func CheckFeatures(orig *ocappsv1.DeploymentConfig) []*Warning {
 	var result []*Warning
+
 	if len(orig.OwnerReferences) != 0 {
 		result = append(result, OwnerReferenceWarning)
 	}
+
 	if orig.Spec.Test {
 		result = append(result, UnsupportedFeatureTestWarning)
 	}
-	if orig.Spec.Strategy.Type == ocappsv1.DeploymentStrategyTypeCustom {
+
+	switch {
+	case orig.Spec.Strategy.Type == ocappsv1.DeploymentStrategyTypeCustom:
 		result = append(result, UnsupportedFeatureCustomWarning)
-	} else if orig.Spec.Strategy.RollingParams != nil {
+	case orig.Spec.Strategy.RollingParams != nil:
 		if orig.Spec.Strategy.RollingParams.Pre != nil || orig.Spec.Strategy.RollingParams.Post != nil {
 			result = append(result, UnsupportedFeatureHooksWarning)
 		}
+
 		if orig.Spec.Strategy.RollingParams.IntervalSeconds != nil {
 			result = append(result, UnsupportedFeatureRollingIntervalSecondsWarning)
 		}
+
 		if orig.Spec.Strategy.RollingParams.UpdatePeriodSeconds != nil {
 			result = append(result, UnsupportedFeatureRollingUpdatePeriodSecondsWarning)
 		}
-	} else if orig.Spec.Strategy.RecreateParams != nil {
+
+	case orig.Spec.Strategy.RecreateParams != nil:
 		if orig.Spec.Strategy.RecreateParams.Pre != nil || orig.Spec.Strategy.RecreateParams.Mid != nil || orig.Spec.Strategy.RecreateParams.Post != nil {
 			result = append(result, UnsupportedFeatureHooksWarning)
 		}
 	}
+
 	if _, ok := orig.Spec.Selector[DeploymentConfigPodLabel]; ok {
 		result = append(result, ChangedLabelWarning)
 	}
@@ -107,7 +115,9 @@ func (w *Warning) Log(level uint8) {
 	if level == 0 {
 		level = 3
 	}
+
 	logvar := []interface{}{"Name", "w.Name"}
+
 	switch {
 	case level > 2, level == 0:
 		logvar = append(logvar, "Path", w.Path)
@@ -115,6 +125,6 @@ func (w *Warning) Log(level uint8) {
 	case level == 2:
 		logvar = append(logvar, "Description", w.Description)
 	}
-	klog.V(klog.Level(level)).InfoS("conversion warning", logvar...)
 
+	klog.V(klog.Level(level)).InfoS("conversion warning", logvar...)
 }

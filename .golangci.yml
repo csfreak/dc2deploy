@@ -14,9 +14,15 @@ linters:
     - unused
     - goconst
     - gofmt
-    - gomnd
     - whitespace
 linters-settings:
   errcheck:
     exclude-functions:
       - (*github.com/spf13/cobra.Command).MarkFlagFilename
+  wrapcheck:
+    ignoreSigs:
+      - os.WriteFile(
+      - .Marshal(
+      - k8s.io
+      - command.SetCommandOptions(
+      - fmt.Errorf(
