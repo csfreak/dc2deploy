@@ -34,15 +34,20 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:     "dc2deploy",
-	Short:   "Convert Openshift DeploymentConfig to Kuberentes Deployment",
-	Long:    `Convert Openshift DeploymentConfig to Kuberentes Deployment`,
+	Use:   "dc2deploy [name]",
+	Short: "Convert Openshift DeploymentConfig to Kuberentes Deployment",
+	Long:  `Convert Openshift DeploymentConfig to Kuberentes Deployment. It can source from and output to json, yaml, or kubernetes. Flags and Args match kubectl where possible.`,
+	Example: `
+From File:
+dc2deploy -f dc.yaml --output deploy.yaml
+	
+From Kubernetes:
+dc2deploy dcname -n namespacename --dry-run`,
 	Args:    validateArgs,
 	PreRunE: validateFlags,
 	RunE:    command.RunE,
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
