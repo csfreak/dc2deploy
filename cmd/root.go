@@ -71,11 +71,11 @@ func init() {
 	rootCmd.Flags().StringP("output", "o", "yaml", "Output in JSON")
 
 	// Options
-
 	rootCmd.Flags().Bool("ignore-warnings", false, "Ignore Warnings about missing Deployment Features")
 
-	//klog
+	// klog
 	var fs = goflag.NewFlagSet("Logging", goflag.ContinueOnError)
+
 	klog.InitFlags(fs)
 	rootCmd.Flags().AddGoFlag(fs.Lookup("v"))
 }
@@ -84,42 +84,54 @@ func validateArgs(cmd *cobra.Command, args []string) error {
 	if err := cobra.MaximumNArgs(1)(cmd, args); err != nil {
 		return err
 	}
+
 	if len(args) == 1 {
 		if errs := validation.NameIsDNSSubdomain(args[0], false); errs != nil {
 			return fmt.Errorf("invalid deploymentconfig name: %s", errs)
 		}
 	}
+
 	return nil
 }
 
 func validateFlags(cmd *cobra.Command, args []string) error {
 	c := &command.CommandOptions{}
+
 	if filename, err := cmd.Flags().GetString("filename"); err == nil {
 		c.Filename = filename
 	}
+
 	if outfile, err := cmd.Flags().GetString("outfile"); err == nil {
 		c.OutputFilename = outfile
 	}
+
 	if output, err := cmd.Flags().GetString("output"); err == nil {
 		c.OutputFileType = command.FileType(output)
 	}
+
 	if namespace, err := cmd.Flags().GetString("namespace"); err == nil {
 		c.LiveNamespace = namespace
 	}
+
 	if kubeconfig, err := cmd.Flags().GetString("kubeconfig"); err == nil {
 		c.LiveKubeconfig = kubeconfig
 	}
+
 	if len(args) == 1 {
 		c.LiveDC = args[0]
 	}
+
 	if dryrun, err := cmd.Flags().GetBool("dry-run"); err == nil {
 		c.LiveDryRun = dryrun
 	}
+
 	if ignore, err := cmd.Flags().GetBool("ignore-warnings"); err == nil {
 		c.IgnoreWarnings = ignore
 	}
+
 	if verbosity, err := cmd.Flags().GetUint8("v"); err == nil {
 		c.Verbosity = verbosity
 	}
+
 	return command.SetCommandOptions(c)
 }

@@ -22,9 +22,16 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra/doc"
 )
 
 func GenMarkdownTree(path string) error {
-	return doc.GenMarkdownTree(rootCmd, path)
+	err := doc.GenMarkdownTree(rootCmd, path)
+	if err != nil {
+		return fmt.Errorf("unable to generate markdown: %w", err)
+	}
+
+	return nil
 }

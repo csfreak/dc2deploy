@@ -33,6 +33,7 @@ import (
 
 func RunE(cmd *cobra.Command, args []string) error {
 	cmd.SilenceUsage = true
+
 	if Options.inputType == LiveIOType {
 		return DoLive()
 	}
@@ -41,7 +42,6 @@ func RunE(cmd *cobra.Command, args []string) error {
 }
 
 func DoConvert() error {
-
 	dc, err := convert.LoadDC(Options.Filename)
 	if err != nil {
 		return fmt.Errorf("unable to load %s: %w", Options.Filename, err)
@@ -56,6 +56,7 @@ func DoConvert() error {
 				w.Log(Options.Verbosity)
 			}
 		}
+
 		if Options.IgnoreWarnings {
 			klog.V(2).InfoS("ignoring warnings")
 		} else {
@@ -65,11 +66,13 @@ func DoConvert() error {
 
 	deploy, err := convert.ToDeploy(dc)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to convert to deploy: %w", err)
 	}
+
 	o, err := convert.ToOuput(deploy, string(Options.OutputFileType))
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to marshal object: %w", err)
 	}
+
 	return os.WriteFile(Options.OutputFilename, o, 0644)
 }

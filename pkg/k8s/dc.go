@@ -46,20 +46,22 @@ func LoadDC(name string, namespace string) (*ocappsv1.DeploymentConfig, error) {
 	if namespace == "" {
 		namespace = apiv1.NamespaceDefault
 	}
-	// list, err := Client.Resource(schema.GroupVersionResource{Resource: "Namespace"}).List(context.TODO(), metav1.ListOptions{})
-	// klog.V(2).InfoS("DCs", "list", list, "err", err)
+
 	resp, err := Client.Resource(dcresource).Namespace(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		klog.V(2).ErrorS(err, "unable to load deploymentconfig", "name", name, "namespace", namespace, "response", resp)
 		return nil, fmt.Errorf("unable to load %s: %w", name, err)
 	}
+
 	unstructured := resp.UnstructuredContent()
+
 	var dc ocappsv1.DeploymentConfig
+
 	err = runtime.DefaultUnstructuredConverter.
 		FromUnstructured(unstructured, &dc)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse deploymentconfig %s: %w", name, err)
 	}
-	return &dc, nil
 
+	return &dc, nil
 }

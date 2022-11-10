@@ -46,6 +46,7 @@ func Init(kubeconfig string) error {
 		klog.V(2).ErrorS(err, "error building client config")
 		return err
 	}
+
 	klog.V(2).InfoS("built client config", "host", config.Host)
 
 	client, err := dynamic.NewForConfig(config)
@@ -53,7 +54,10 @@ func Init(kubeconfig string) error {
 		klog.V(2).ErrorS(err, "error building client")
 		return err
 	}
+
 	klog.V(2).InfoS("built client")
+
 	Client = client
+
 	return nil
 }
