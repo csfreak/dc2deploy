@@ -27,7 +27,7 @@ import (
 
 	"github.com/csfreak/dc2deploy/pkg/convert"
 	"github.com/csfreak/dc2deploy/pkg/k8s"
-	klog "k8s.io/klog/v2"
+	"github.com/csfreak/dc2deploy/pkg/writer"
 )
 
 func DoLive() error {
@@ -42,18 +42,11 @@ func DoLive() error {
 	}
 
 	warnings := convert.CheckFeatures(dc)
-	if warnings != nil {
-		for _, w := range warnings {
-			if Options.LiveDryRun && Options.Verbosity < 2 {
-				w.Log(2)
-			} else {
-				w.Log(Options.Verbosity)
-			}
-		}
 
-		if Options.IgnoreWarnings {
-			klog.V(2).InfoS("ignoring warnings")
-		} else {
+	checkWarnings(warnings)
+
+	if warnings != nil {
+		if !Options.IgnoreWarnings {
 			return fmt.Errorf("use --ignore-warnings to continue")
 		}
 	}
@@ -69,9 +62,7 @@ func DoLive() error {
 			return fmt.Errorf("unable to marshal object: %w", err)
 		}
 
-		fmt.Print("-----------\n\n")
-		fmt.Println(string(o))
-		fmt.Println("-----------")
+		writer.WriteFile("-", o)
 
 		return nil
 	}

@@ -22,14 +22,12 @@ THE SOFTWARE.
 package cmd
 
 import (
-	goflag "flag"
 	"fmt"
 	"os"
 
 	"github.com/csfreak/dc2deploy/pkg/command"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/api/validation"
-	klog "k8s.io/klog/v2"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -73,11 +71,7 @@ func init() {
 	// Options
 	rootCmd.Flags().Bool("ignore-warnings", false, "Ignore Warnings about missing Deployment Features")
 
-	// klog
-	var fs = goflag.NewFlagSet("Logging", goflag.ContinueOnError)
-
-	klog.InitFlags(fs)
-	rootCmd.Flags().AddGoFlag(fs.Lookup("v"))
+	rootCmd.Flags().UintP("verbosity", "v", 0, "Set Verbosity")
 }
 
 func validateArgs(cmd *cobra.Command, args []string) error {
@@ -129,7 +123,7 @@ func validateFlags(cmd *cobra.Command, args []string) error {
 		c.IgnoreWarnings = ignore
 	}
 
-	if verbosity, err := cmd.Flags().GetUint8("v"); err == nil {
+	if verbosity, err := cmd.Flags().GetUint8("verbosity"); err == nil {
 		c.Verbosity = verbosity
 	}
 

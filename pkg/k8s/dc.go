@@ -26,12 +26,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/csfreak/dc2deploy/pkg/writer"
 	ocappsv1 "github.com/openshift/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	klog "k8s.io/klog/v2"
 )
 
 var (
@@ -49,7 +49,7 @@ func LoadDC(name string, namespace string) (*ocappsv1.DeploymentConfig, error) {
 
 	resp, err := Client.Resource(dcresource).Namespace(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
-		klog.V(2).ErrorS(err, "unable to load deploymentconfig", "name", name, "namespace", namespace, "response", resp)
+		writer.WriteOut(2, "unable to load deploymentconfig: name %s, namespace %s", name, namespace)
 		return nil, fmt.Errorf("unable to load %s: %w", name, err)
 	}
 

@@ -24,6 +24,8 @@ package command
 
 import (
 	"fmt"
+
+	"github.com/csfreak/dc2deploy/pkg/writer"
 )
 
 var Options *CommandOptions
@@ -62,7 +64,6 @@ func SetCommandOptions(c *CommandOptions) error {
 		Options.LiveNamespace = c.LiveNamespace
 		Options.LiveKubeconfig = c.LiveKubeconfig
 		Options.LiveDryRun = c.LiveDryRun
-		Options.IgnoreWarnings = c.IgnoreWarnings
 		Options.inputType = LiveIOType
 
 		if c.LiveDryRun {
@@ -96,7 +97,14 @@ func SetCommandOptions(c *CommandOptions) error {
 		Options.OutputFileType = c.OutputFileType
 	}
 
+	Options.IgnoreWarnings = c.IgnoreWarnings
 	Options.Verbosity = c.Verbosity
+
+	if Options.Verbosity > 4 {
+		Options.Verbosity = 4
+	}
+
+	writer.Level = Options.Verbosity
 
 	return nil
 }

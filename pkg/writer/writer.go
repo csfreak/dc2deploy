@@ -20,28 +20,44 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-package convert
+package writer
 
 import (
 	"fmt"
 	"os"
-
-	ocappsv1 "github.com/openshift/api/apps/v1"
-	"k8s.io/apimachinery/pkg/util/yaml"
+	"strings"
 )
 
-func LoadDC(path string) (*ocappsv1.DeploymentConfig, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, fmt.Errorf("unable to read file: %w", err)
+var Level uint8 = 0
+
+func WriteOut(level uint8, fstring string, args ...interface{}) {
+	if !strings.HasSuffix(fstring, "\n") {
+		fstring += "\n"
 	}
 
-	dc := &ocappsv1.DeploymentConfig{}
+	switch {
+	case level == 0:
+		fmt.Fprintf(os.Stdout, fstring, args...)
+	case level <= Level:
+		fmt.Fprintf(os.Stderr, fstring, args...)
+	}
+}
 
-	err = yaml.Unmarshal(data, dc)
-	if err != nil {
-		return nil, fmt.Errorf("unable to build dc from file: %w", err)
+func WriteErr(level uint8, fstring string, args ...interface{}) {
+	if !strings.HasSuffix(fstring, "\n") {
+		fstring += "\n"
 	}
 
-	return dc, nil
+	if level <= Level {
+		fmt.Fprintf(os.Stderr, fstring, args...)
+	}
+}
+
+func WriteFile(path string, data []byte) error {
+	if path == "-" {
+		WriteOut(0, string(data))
+		return nil
+	}
+
+	return os.WriteFile(path, data, 0644)
 }

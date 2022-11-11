@@ -24,11 +24,10 @@ package command
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/csfreak/dc2deploy/pkg/convert"
+	"github.com/csfreak/dc2deploy/pkg/writer"
 	"github.com/spf13/cobra"
-	klog "k8s.io/klog/v2"
 )
 
 func RunE(cmd *cobra.Command, args []string) error {
@@ -49,17 +48,9 @@ func DoConvert() error {
 
 	warnings := convert.CheckFeatures(dc)
 	if warnings != nil {
-		for _, w := range warnings {
-			if Options.OutputFilename == "-" && Options.Verbosity < 2 {
-				w.Log(2)
-			} else {
-				w.Log(Options.Verbosity)
-			}
-		}
+		checkWarnings(warnings)
 
-		if Options.IgnoreWarnings {
-			klog.V(2).InfoS("ignoring warnings")
-		} else {
+		if !Options.IgnoreWarnings {
 			return fmt.Errorf("use --ignore-warnings to continue")
 		}
 	}
@@ -74,5 +65,21 @@ func DoConvert() error {
 		return fmt.Errorf("unable to marshal object: %w", err)
 	}
 
-	return os.WriteFile(Options.OutputFilename, o, 0644)
+	return writer.WriteFile(Options.OutputFilename, o)
+}
+
+func checkWarnings(w []*convert.Warning) {
+	var warningLogLevel uint8
+
+	if Options.IgnoreWarnings {
+		warningLogLevel = 2
+
+		writer.WriteErr(2, "ignoring warnings")
+	} else {
+		warningLogLevel = 0
+	}
+
+	for _, warning := range w {
+		warning.Print(warningLogLevel)
+	}
 }
