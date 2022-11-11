@@ -23,8 +23,8 @@ THE SOFTWARE.
 package convert
 
 import (
+	"github.com/csfreak/dc2deploy/pkg/writer"
 	ocappsv1 "github.com/openshift/api/apps/v1"
-	klog "k8s.io/klog/v2"
 )
 
 type Warning struct {
@@ -111,20 +111,6 @@ func CheckFeatures(orig *ocappsv1.DeploymentConfig) []*Warning {
 	return result
 }
 
-func (w *Warning) Log(level uint8) {
-	if level == 0 {
-		level = 3
-	}
-
-	logvar := []interface{}{"Name", "w.Name"}
-
-	switch {
-	case level > 2, level == 0:
-		logvar = append(logvar, "Path", w.Path)
-		fallthrough
-	case level == 2:
-		logvar = append(logvar, "Description", w.Description)
-	}
-
-	klog.V(klog.Level(level)).InfoS("conversion warning", logvar...)
+func (w *Warning) Print(level uint8) {
+	writer.WriteErr(level, "Conversion Warning: %s\n%s: path - %s", w.Name, w.Description, w.Path)
 }

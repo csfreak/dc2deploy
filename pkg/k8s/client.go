@@ -25,10 +25,10 @@ package k8s
 import (
 	"path/filepath"
 
+	"github.com/csfreak/dc2deploy/pkg/writer"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
-	klog "k8s.io/klog/v2"
 )
 
 var (
@@ -38,24 +38,24 @@ var (
 func Init(kubeconfig string) error {
 	if kubeconfig == "" {
 		kubeconfig = filepath.Join(homedir.HomeDir(), ".kube", "config")
-		klog.V(2).InfoS("set kubeconfig", "kubeconfig", kubeconfig)
+		writer.WriteOut(2, "set kubeconfig: %+v", kubeconfig)
 	}
 
 	config, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 	if err != nil {
-		klog.V(2).ErrorS(err, "error building client config")
+		writer.WriteOut(2, "error building client config: %v", err)
 		return err
 	}
 
-	klog.V(2).InfoS("built client config", "host", config.Host)
+	writer.WriteOut(2, "built client config for host %s", config.Host)
 
 	client, err := dynamic.NewForConfig(config)
 	if err != nil {
-		klog.V(2).ErrorS(err, "error building client")
+		writer.WriteOut(2, "error building client: %v", err)
 		return err
 	}
 
-	klog.V(2).InfoS("built client")
+	writer.WriteOut(2, "built client")
 
 	Client = client
 
