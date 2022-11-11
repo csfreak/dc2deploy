@@ -62,9 +62,7 @@ func DoLive() error {
 			return fmt.Errorf("unable to marshal object: %w", err)
 		}
 
-		writer.WriteFile("-", o)
-
-		return nil
+		return writer.WriteFile("-", o)
 	}
 
 	return nil
