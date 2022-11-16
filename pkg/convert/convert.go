@@ -79,7 +79,6 @@ func ToDeploy(orig *ocappsv1.DeploymentConfig) (*appsv1.Deployment, error) {
 			Type:          appsv1.RollingUpdateDeploymentStrategyType,
 			RollingUpdate: r,
 		}
-
 	} else {
 		deploy.Spec.Strategy = appsv1.DeploymentStrategy{
 			Type: appsv1.RecreateDeploymentStrategyType,
