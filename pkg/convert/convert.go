@@ -63,18 +63,23 @@ func ToDeploy(orig *ocappsv1.DeploymentConfig) (*appsv1.Deployment, error) {
 	deploy.Spec.MinReadySeconds = dc.Spec.MinReadySeconds
 
 	if dc.Spec.Strategy.Type == ocappsv1.DeploymentStrategyTypeRolling {
-		deploy.Spec.Strategy = appsv1.DeploymentStrategy{
-			Type: appsv1.RollingUpdateDeploymentStrategyType,
-			RollingUpdate: &appsv1.RollingUpdateDeployment{
-				MaxUnavailable: dc.Spec.Strategy.RollingParams.MaxUnavailable,
-				MaxSurge:       dc.Spec.Strategy.RollingParams.MaxSurge,
-			},
+		r := &appsv1.RollingUpdateDeployment{}
+
+		if dc.Spec.Strategy.RollingParams != nil {
+			r.MaxUnavailable = dc.Spec.Strategy.RollingParams.MaxUnavailable
+			r.MaxSurge = dc.Spec.Strategy.RollingParams.MaxSurge
+
+			if orig.Spec.Strategy.RollingParams.TimeoutSeconds != nil {
+				timeout32 := int32(*orig.Spec.Strategy.RollingParams.TimeoutSeconds)
+				deploy.Spec.ProgressDeadlineSeconds = &timeout32
+			}
 		}
 
-		if orig.Spec.Strategy.RollingParams.TimeoutSeconds != nil {
-			timeout32 := int32(*orig.Spec.Strategy.RollingParams.TimeoutSeconds)
-			deploy.Spec.ProgressDeadlineSeconds = &timeout32
+		deploy.Spec.Strategy = appsv1.DeploymentStrategy{
+			Type:          appsv1.RollingUpdateDeploymentStrategyType,
+			RollingUpdate: r,
 		}
+
 	} else {
 		deploy.Spec.Strategy = appsv1.DeploymentStrategy{
 			Type: appsv1.RecreateDeploymentStrategyType,
